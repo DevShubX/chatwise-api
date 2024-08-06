@@ -1,0 +1,51 @@
+// schema.prisma
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                    String   @id @default(auto()) @map("_id") @db.ObjectId
+  username              String   @unique
+  email                 String   @unique
+  passwordHash          String
+  profilePicture        String?
+  bio                   String?
+  friendRequestsSent    String[]
+  friendRequestsReceived String[]
+  friends               String[]
+  posts                 Post[]
+  comments              Comment[]
+
+  @@map("users")
+}
+
+model Post {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String     @db.ObjectId
+  content   String
+  createdAt DateTime   @default(now())
+  comments  Comment[]
+  
+  user      User       @relation(fields: [userId], references: [id])
+
+  @@map("posts")
+}
+
+model Comment {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  postId    String   @db.ObjectId
+  userId    String   @db.ObjectId
+  content   String
+  createdAt DateTime @default(now())
+  
+  post      Post     @relation(fields: [postId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("comments")
+}
